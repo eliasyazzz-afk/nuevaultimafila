@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="La Última Fila, una red social para guardar los recuerdos del último año escolar.">
+  <title>La Última Fila | Recuerdos que quedan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <style>
+    /* Topbar minimize button styles (quick inline override) */
+    .sidebar-minimize { display: none; border: 0; width: 34px; height: 34px; border-radius: 9px; background: #fff; color: var(--ink); font-size: 16px; display: grid; place-items: center; box-shadow: 0 6px 18px rgba(17,42,72,.06); }
+    @media (max-width: 640px) {
+      .sidebar-minimize { display: grid; margin-left: 6px; }
+      .topbar { gap: 8px; }
+      .mobile-menu { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 9px; background: #edf3f9; color: var(--ink); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
+      <a class="brand" href="#home" data-page="home"><span class="brand-mark">UF</span><span class="brand-text">LA ÚLTIMA<br>FILA</span></a>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Cerrar menú">×</button>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Contraer menú">☰</button>
+      <nav class="nav-links">
+        <button class="nav-link active" data-page="home"><span>⌂</span><b>Home</b></button>
+        <button class="nav-link" data-page="colegios"><span>♜</span><b>Colegios</b></button>
+        <button class="nav-link" data-page="ciudades"><span>⌖</span><b>Ciudades</b></button>
+        <button class="nav-link" data-page="eventos"><span>✦</span><b>Eventos</b></button>
+        <button class="nav-link" data-page="perfil"><span>◉</span><b>Mi perfil</b></button>
+        <button class="nav-link" data-page="configuracion"><span>⚙</span><b>Configuración</b></button>
+      </nav>
+      <button class="nav-link logout" id="logoutButton"><span>↪</span><b>Cerrar sesión</b></button>
+    </aside>
+
+    <div class="app-content">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
+        <button class="sidebar-minimize" id="sidebarMinimizeTop" aria-label="Minimizar menú">⇆</button>
+        <div class="topbar-greeting"><small>MIÉRCOLES, 7 DE AGOSTO</small><strong>Hola, <span id="greetingName">Valentina</span> <span>✦</span></strong></div>
+        <div class="header-user hidden" id="headerUser">
+          <img src="assets/img/05_12.jfif" alt="Foto de perfil de Valentina">
+          <div><b>Valentina M.</b><small>Promo 2026</small></div>
+        </div>
+        <div class="auth-actions hidden" id="authActions"><button class="text-button" data-modal="register">Crear cuenta</button><button class="primary-button small" data-modal="login">Iniciar sesión</button></div>
+      </header>
+      <main id="pageContent" tabindex="-1"></main>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <section class="modal" id="modalContent" role="dialog" aria-modal="true"></section>
+  </div>
+  <div id="modalTemplates" class="hidden">
+      <div id="registerFormTemplate" class="hidden">
+        <div class="modal-top">
+          <div>
+            <h2>Crear cuenta</h2>
+            <p>Registrate para publicar y compartir tus recuerdos.</p>
+          </div>
+          <button class="close" type="button" onclick="document.getElementById('modalBackdrop').classList.remove('open'); document.getElementById('modalBackdrop').setAttribute('aria-hidden','true');">×</button>
+        </div>
+        <form id="registerForm" class="form">
+          <label>Nombre completo
+            <input class="field" id="regName" type="text" required placeholder="Tu nombre" />
+          </label>
+          <label>Usuario
+            <input class="field" id="regUsername" type="text" required placeholder="usuario123" />
+          </label>
+          <label>Contraseña
+            <input class="field" id="regPassword" type="password" required placeholder="••••••••" />
+          </label>
+          <label>Email (opcional)
+            <input class="field" id="regEmail" type="email" placeholder="nombre@email.com" />
+          </label>
+          <label>Foto (opcional)
+            <input class="field" id="regAvatar" type="file" accept="image/*" />
+            <div class="image-preview-grid" id="regAvatarPreview"></div>
+          </label>
+          <p class="muted">¿Ya tenés cuenta? <button class="text-button" type="button" id="switchToLogin">Iniciar sesión</button></p>
+          <div class="form-actions">
+            <button class="secondary-button" type="button" onclick="document.getElementById('modalBackdrop').classList.remove('open'); document.getElementById('modalBackdrop').setAttribute('aria-hidden','true');">Cancelar</button>
+            <button class="primary-button" type="submit">Crear cuenta</button>
+          </div>
+        </form>
+      </div>
+      <div id="loginFormTemplate" class="hidden">
+        <div class="modal-top">
+          <div>
+            <h2>Iniciar sesión</h2>
+            <p>Ingresá con tu email para publicar tus recuerdos.</p>
+          </div>
+          <button class="close" type="button" onclick="document.getElementById('modalBackdrop').classList.remove('open'); document.getElementById('modalBackdrop').setAttribute('aria-hidden','true');">×</button>
+        </div>
+        <form id="loginForm" class="form">
+          <label>Usuario o Email
+            <input class="field" id="loginUser" type="text" required placeholder="usuario123 o email@ejemplo.com" />
+          </label>
+          <label>Contraseña
+            <input class="field" id="loginPassword" type="password" required placeholder="••••••••" />
+          </label>
+          <p class="muted">¿No tenés cuenta? <button class="text-button" type="button" id="switchToRegister">Crear cuenta</button></p>
+          <div class="form-actions">
+            <button class="secondary-button" type="button" onclick="document.getElementById('modalBackdrop').classList.remove('open'); document.getElementById('modalBackdrop').setAttribute('aria-hidden','true');">Cancelar</button>
+            <button class="primary-button" type="submit">Iniciar sesión</button>
+          </div>
+        </form>
+      </div>
+      <div id="profileFormTemplate" class="hidden">
+        <div class="modal-top">
+          <div>
+            <h2>Editar perfil</h2>
+            <p>Actualizá tu foto, nombre, escuela, descripción y playlist.</p>
+          </div>
+          <button class="close" type="button" onclick="document.getElementById('modalBackdrop').classList.remove('open'); document.getElementById('modalBackdrop').setAttribute('aria-hidden','true');">×</button>
+        </div>
+        <form id="profileForm" class="form">
+          <label>Foto de perfil
+            <input type="file" accept="image/*" class="field" id="profilePhoto" />
+            <div class="image-preview-grid" id="profilePhotoPreview"></div>
+          </label>
+          <label>Imagen de portada
+            <input type="file" accept="image/*" class="field" id="profileCoverPhoto" />
+            <div class="image-preview-grid" id="profileCoverPreview"></div>
+          </label>
+          <label>Nombre completo
+            <input class="field" id="profileName" type="text" value="Valentina Martínez" />
+          </label>
+          <label>Escuela o promo
+            <input class="field" id="profileSchool" type="text" value="Instituto Técnico Salesiano Villada" />
+          </label>
+          <label>Ciudad
+            <input class="field" id="profileCity" type="text" value="Córdoba" />
+          </label>
+          <label>Descripción
+            <textarea class="field" id="profileDescription" rows="4">Guardando cada momento del último año escolar en fotos, eventos y playlist.</textarea>
+          </label>
+          <label>Spotify o música
+            <input class="field" id="profileMusic" type="url" value="https://open.spotify.com/" />
+          </label>
+          <div class="form-actions">
+            <button class="secondary-button" type="button" onclick="document.getElementById('modalBackdrop').classList.remove('open'); document.getElementById('modalBackdrop').setAttribute('aria-hidden','true');">Cancelar</button>
+            <button class="primary-button" type="submit">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+      <div id="postFormTemplate" class="hidden">
+        <div class="modal-top">
+          <div>
+            <h2>Publicar evento</h2>
+            <p>Agregá fotos y elegí el mejor diseño para tu publicación.</p>
+          </div>
+          <button class="close" type="button" onclick="document.getElementById('modalBackdrop').classList.remove('open'); document.getElementById('modalBackdrop').setAttribute('aria-hidden','true');">×</button>
+        </div>
+        <form id="postForm" class="form">
+          <label>Título del evento
+            <input class="field" id="postTitle" type="text" placeholder="Ej. Fiesta previa" />
+          </label>
+          <label>Fecha
+            <input class="field" id="postDate" type="date" />
+          </label>
+          <label>Ciudad / Colegio
+            <input class="field" id="postLocation" type="text" placeholder="Ej. Córdoba - Instituto Técnico Salesiano" />
+          </label>
+          <label>Tipo de evento
+            <select class="field" id="postType">
+              <option>Fiesta</option>
+              <option>Viaje</option>
+              <option>Cena de egresados</option>
+              <option>Previa</option>
+              <option>Otro</option>
+            </select>
+          </label>
+          <label>Descripción
+            <textarea class="field" id="postDescription" rows="4" placeholder="Contá qué pasó, quién estuvo y cómo fue la noche..."></textarea>
+          </label>
+          <label>Fotos o videos del evento
+            <input class="field" id="postImages" type="file" accept="image/*,video/*" multiple />
+            <div class="image-preview-grid" id="postImagesPreview"></div>
+          </label>
+          <div class="layout-options">
+            <p>Elegir layout</p>
+            <label class="layout-option"><input type="radio" name="postLayout" value="grid" checked /> Grid de fotos</label>
+            <label class="layout-option"><input type="radio" name="postLayout" value="hero" /> Foto principal grande</label>
+            <label class="layout-option"><input type="radio" name="postLayout" value="carousel" /> Carrusel</label>
+          </div>
+          <div class="form-actions">
+            <button class="secondary-button" type="button" onclick="document.getElementById('modalBackdrop').classList.remove('open'); document.getElementById('modalBackdrop').setAttribute('aria-hidden','true');">Cancelar</button>
+            <button class="primary-button" type="submit">Publicar</button>
+          </div>
+        </form>
+      </div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="js/main.js"></script>
+  <script>
+    (function () {
+      const profileStorageKey = 'ultimaFilaPerfil';
+      const postStorageKey = 'ultimaFilaPosts';
+      const defaultProfile = {
+        photo: 'assets/img/05_12.jfif',
+        coverPhoto: 'assets/img/pexels-maorattias-5192307.jpg',
+        name: 'Valentina Martínez',
+        school: 'Instituto Técnico Salesiano Villada',
+        city: 'Córdoba',
+        description: 'Guardando cada momento del último año escolar en fotos, eventos y playlist.',
+        music: 'https://open.spotify.com/'
+      };
+      let profileData = JSON.parse(localStorage.getItem(profileStorageKey) || 'null') || defaultProfile;
+      if (!profileData.coverPhoto) profileData.coverPhoto = defaultProfile.coverPhoto;
+      window.profileData = profileData;
+      function saveProfileData() {
+        localStorage.setItem(profileStorageKey, JSON.stringify(profileData));
+        window.profileData = profileData;
+      }
+      function updateAuthInterface() {
+        const current = JSON.parse(localStorage.getItem('ultimaFilaCurrentUser') || 'null');
+        window.currentUser = current;
+        const headerUser = document.getElementById('headerUser');
+        const authActions = document.getElementById('authActions');
+        const logoutBtn = document.getElementById('logoutButton');
+        if (current) {
+          headerUser.classList.remove('hidden');
+          authActions.classList.add('hidden');
+          logoutBtn.classList.remove('hidden');
+          const img = headerUser.querySelector('img');
+          const b = headerUser.querySelector('b');
+          const small = headerUser.querySelector('small');
+          if (img) img.src = current.photo || profileData.photo;
+          if (b) b.textContent = current.name.split(' ').slice(0,2).join(' ');
+          if (small) small.textContent = profileData.school || '';
+        } else {
+          headerUser.classList.add('hidden');
+          authActions.classList.remove('hidden');
+          logoutBtn.classList.add('hidden');
+        }
+      }
+      function syncPostsData() {
+        try {
+          userPosts = JSON.parse(localStorage.getItem(postStorageKey)) || userPosts || [];
+        } catch (error) {
+          userPosts = userPosts || [];
+        }
+        window.userPosts = userPosts;
+      }
+      function savePostsData() {
+        try {
+          localStorage.setItem(postStorageKey, JSON.stringify(userPosts || []));
+        } catch (error) {
+          showToast('No se pudo guardar: las fotos/videos ocupan demasiado espacio en este navegador.');
+        }
+      }
+      function renderProfileInfo() {
+        const profileCover = document.querySelector('.profile-cover');
+        const profileImage = document.querySelector('.profile-summary .profile-picture');
+        const profileName = document.querySelector('.profile-summary h1');
+        const profileSubtitle = document.querySelector('.profile-summary p');
+        const profileAbout = document.querySelector('.info-panel .info-card p');
+        const playlistLink = document.querySelector('.info-panel a[href="https://open.spotify.com/"]');
+        const topbarImage = document.querySelector('#headerUser img');
+        const topbarName = document.querySelector('#headerUser b');
+        const topbarSmall = document.querySelector('#headerUser small');
+        const greetingName = document.getElementById('greetingName');
+        if (profileCover) profileCover.style.backgroundImage = `linear-gradient(105deg, rgba(11,37,69,.84), rgba(22,119,255,.25)), url('${profileData.coverPhoto || defaultProfile.coverPhoto}')`;
+        if (profileImage) profileImage.src = profileData.photo;
+        if (topbarImage) topbarImage.src = profileData.photo;
+        if (profileName) profileName.textContent = profileData.name;
+        if (greetingName) greetingName.textContent = profileData.name.split(' ').slice(0, 2).join(' ');
+        if (topbarName) topbarName.textContent = profileData.name.split(' ').slice(0, 2).join(' ');
+        if (profileSubtitle) profileSubtitle.textContent = `${profileData.school}, ${profileData.city}`;
+        if (profileAbout) profileAbout.textContent = profileData.description;
+        if (playlistLink) playlistLink.href = profileData.music;
+        if (topbarSmall) topbarSmall.textContent = profileData.school;
+      }
+      function updateGalleryCount() {
+        const galleryInfo = document.querySelector('.page-heading .eyebrow + h1 + p');
+        if (!galleryInfo) return;
+        const count = (window.userPosts || []).length;
+        galleryInfo.textContent = count
+          ? `${count} publicación${count > 1 ? 'es nuevas' : ' nueva'} guardada${count > 1 ? 's' : ''} en este navegador.`
+          : 'Todavía no publicaste fotos propias.';
+      }
+      function updatePostsView() {
+        const gallery = document.querySelector('.gallery');
+        if (!gallery) return;
+        const defaultGallery = ['pexels-marwen-larafa-2159807713-36606989.jpg','img-rosa-humo-porta.jpg','pexels-maorattias-5192307.jpg','pexels-koolshooters-6982443.jpg','pexels-holodna-21579377.jpg','pexels-zachtheshoota-4307128.jpg'];
+        const posts = (window.userPosts || []).map(post => ({ src: post.image, title: `${post.title} · ${post.date || 'Sin fecha'}` }));
+        const defaultItems = defaultGallery.map(src => ({ src: `assets/img/${src}`, title: 'Recuerdo de La Última Fila' }));
+        gallery.innerHTML = [...posts, ...defaultItems].map(item => window.isVideoSrc && window.isVideoSrc(item.src) ? `<video src="${item.src}" title="${item.title}" muted playsinline></video>` : `<img src="${item.src}" alt="${item.title}" title="${item.title}">`).join('');
+      }
+      function updatePage() {
+        renderProfileInfo();
+        updateGalleryCount();
+        updatePostsView();
+      }
+      function updateTopbarDate() {
+        const dateEl = document.querySelector('.topbar-greeting small');
+        if (!dateEl) return;
+        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        const today = new Date();
+        const formatted = today.toLocaleDateString('es-AR', options).replace(/(^\w)/, c => c.toUpperCase());
+        dateEl.textContent = formatted;
+      }
+      document.addEventListener('click', function (e) {
+        if (e.target && e.target.matches && e.target.matches('[data-modal="login"]')) {
+          e.preventDefault();
+          setModalContent('loginFormTemplate');
+        }
+        if (e.target && e.target.matches && e.target.matches('[data-modal="register"]')) {
+          e.preventDefault();
+          setModalContent('registerFormTemplate');
+        }
+      });
+      function setModalContent(templateId) {
+        const template = document.getElementById(templateId);
+        if (!template) return;
+        modalContent.innerHTML = template.innerHTML;
+        modalBackdrop.classList.add('open');
+        modalBackdrop.setAttribute('aria-hidden', 'false');
+        bindModalForm();
+      }
+      window.setModalContent = setModalContent;
+
+      function bindModalForm() {
+        const form = modalContent.querySelector('form');
+        if (!form) return;
+        const cancelButton = form.querySelector('.secondary-button[type="button"]');
+        if (cancelButton) cancelButton.addEventListener('click', closeModal);
+
+        const getUsers = () => JSON.parse(localStorage.getItem('ultimaFilaUsers') || '[]');
+        const saveUsers = (u) => localStorage.setItem('ultimaFilaUsers', JSON.stringify(u));
+        const setCurrentUser = (user) => { localStorage.setItem('ultimaFilaCurrentUser', JSON.stringify(user)); window.currentUser = user; updateAuthInterface(); };
+
+        // switch links
+        const switchToRegister = modalContent.querySelector('#switchToRegister');
+        const switchToLogin = modalContent.querySelector('#switchToLogin');
+        if (switchToRegister) switchToRegister.addEventListener('click', () => setModalContent('registerFormTemplate'));
+        if (switchToLogin) switchToLogin.addEventListener('click', () => setModalContent('loginFormTemplate'));
+
+        if (form.id === 'registerForm') {
+          const nameInput = form.querySelector('#regName');
+          const usernameInput = form.querySelector('#regUsername');
+          const passwordInput = form.querySelector('#regPassword');
+          const emailInput = form.querySelector('#regEmail');
+          const avatarInput = form.querySelector('#regAvatar');
+          const preview = form.querySelector('#regAvatarPreview');
+          let avatarUrl = '';
+          if (avatarInput) avatarInput.addEventListener('change', async (event) => { const file = event.target.files[0]; if (!file) return; try { avatarUrl = await window.readImage(file); preview.innerHTML = `<img src="${avatarUrl}" alt="Vista previa">`; } catch (error) { console.error(error); } });
+          form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const name = nameInput.value.trim() || 'Usuario';
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            const email = emailInput.value.trim();
+            if (!username || !password) { showToast('Ingresá usuario y contraseña.'); return; }
+            const users = getUsers();
+            if (users.find(u => u.username === username)) { showToast('El nombre de usuario ya está en uso.'); return; }
+            const user = { id: Date.now(), name, username, email, password, photo: avatarUrl || profileData.photo };
+            users.push(user); saveUsers(users); setCurrentUser(user);
+            profileData.name = user.name; profileData.photo = user.photo; saveProfileData(); updatePage(); closeModal(); showToast('Cuenta creada. Ya estás dentro.');
+          });
+        }
+
+        if (form.id === 'loginForm') {
+          const userInput = form.querySelector('#loginUser');
+          const passInput = form.querySelector('#loginPassword');
+          form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const val = userInput.value.trim(); const pass = passInput.value;
+            if (!val || !pass) { showToast('Ingresá usuario y contraseña.'); return; }
+            const users = getUsers();
+            const user = users.find(u => (u.username && u.username === val) || (u.email && u.email === val));
+            if (!user) { showToast('Usuario no encontrado. Registrate.'); return; }
+            if (!user.password || user.password !== pass) { showToast('Contraseña incorrecta.'); return; }
+            setCurrentUser(user); profileData.name = user.name; profileData.photo = user.photo || profileData.photo; saveProfileData(); updatePage(); closeModal(); showToast('Has iniciado sesión.');
+          });
+        }
+
+        if (form.id === 'profileForm') {
+          const nameInput = form.querySelector('#profileName');
+          const schoolInput = form.querySelector('#profileSchool');
+          const cityInput = form.querySelector('#profileCity');
+          const descriptionInput = form.querySelector('#profileDescription');
+          const musicInput = form.querySelector('#profileMusic');
+          const photoInput = form.querySelector('#profilePhoto');
+          const coverInput = form.querySelector('#profileCoverPhoto');
+          const preview = form.querySelector('#profilePhotoPreview');
+          const coverPreview = form.querySelector('#profileCoverPreview');
+          nameInput.value = profileData.name; schoolInput.value = profileData.school; cityInput.value = profileData.city; descriptionInput.value = profileData.description; musicInput.value = profileData.music;
+          if (preview && profileData.photo) preview.innerHTML = `<img src="${profileData.photo}" alt="Foto actual">`;
+          if (coverPreview && profileData.coverPhoto) coverPreview.innerHTML = `<img src="${profileData.coverPhoto}" alt="Portada actual">`;
+          if (photoInput) photoInput.addEventListener('change', async (event) => { const file = event.target.files[0]; if (!file) return; try { const url = await window.readImage(file); profileData.photo = url; preview.innerHTML = `<img src="${url}" alt="Vista previa">`; } catch (error) { console.error(error); } });
+          if (coverInput) coverInput.addEventListener('change', async (event) => { const file = event.target.files[0]; if (!file) return; try { const url = await window.readImage(file); profileData.coverPhoto = url; if (coverPreview) coverPreview.innerHTML = `<img src="${url}" alt="Vista previa de portada">`; } catch (error) { console.error(error); } });
+          form.addEventListener('submit', async (event) => { event.preventDefault(); profileData.name = nameInput.value.trim() || profileData.name; profileData.school = schoolInput.value.trim() || profileData.school; profileData.city = cityInput.value.trim() || profileData.city; profileData.description = descriptionInput.value.trim() || profileData.description; profileData.music = musicInput.value.trim() || profileData.music; profileData.coverPhoto = profileData.coverPhoto || defaultProfile.coverPhoto; saveProfileData(); updatePage(); closeModal(); showToast('Perfil actualizado correctamente.'); });
+        }
+
+        if (form.id === 'postForm') {
+          const titleInput = form.querySelector('#postTitle');
+          const dateInput = form.querySelector('#postDate');
+          const descriptionInput = form.querySelector('#postDescription');
+          const locationInput = form.querySelector('#postLocation');
+          const typeInput = form.querySelector('#postType');
+          const imageInput = form.querySelector('#postImages');
+          const preview = form.querySelector('#postImagesPreview');
+          const maxFileBytes = 5 * 1024 * 1024;
+          if (imageInput) imageInput.addEventListener('change', async (event) => { const files = Array.from(event.target.files || []); preview.innerHTML = ''; for (const file of files) { if (file.size > maxFileBytes) { showToast(`"${file.name}" pesa demasiado (máx. 5 MB por archivo).`); continue; } try { const url = await window.readImage(file); preview.innerHTML += file.type.startsWith('video/') ? `<video src="${url}" controls muted></video>` : `<img src="${url}" alt="Preview">`; } catch (error) { console.error(error); } } });
+          form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const files = Array.from(imageInput.files || []).filter(file => file.size <= maxFileBytes);
+            if (files.length < imageInput.files.length) showToast('Algunos archivos pesaban demasiado y no se incluyeron (máx. 5 MB por archivo).');
+            const images = [];
+            for (const file of files) { try { images.push(await window.readImage(file)); } catch (error) { console.error(error); } }
+            const current = JSON.parse(localStorage.getItem('ultimaFilaCurrentUser') || 'null');
+            const post = { id: Date.now(), title: titleInput.value.trim() || 'Nuevo recuerdo', date: dateInput.value || 'Sin fecha', description: descriptionInput.value.trim(), location: locationInput.value.trim(), type: typeInput.value, author: current ? current.name : 'Anónimo', layout: form.querySelector('input[name="postLayout"]:checked')?.value || 'grid', images, image: images[0] || 'assets/img/pexels-marwen-larafa-2159807713-36606989.jpg' };
+            userPosts = userPosts || []; userPosts.unshift(post); savePostsData(); syncPostsData(); window.render('perfil'); closeModal(); showToast('Evento publicado y actualizado en tu perfil.');
+          });
+        }
+      }
+      if (typeof window.render === 'function') {
+        const originalRender = window.render;
+        window.render = function (page, context) {
+          syncPostsData();
+          originalRender(page, context);
+          updatePage();
+        };
+      }
+      document.addEventListener('DOMContentLoaded', function () {
+        syncPostsData();
+        updatePage();
+        updateTopbarDate();
+        updateAuthInterface();
+        if (window.currentUser) {
+          profileData.name = window.currentUser.name || profileData.name;
+          profileData.photo = window.currentUser.photo || profileData.photo;
+          saveProfileData();
+          updatePage();
+        } else {
+          setModalContent('loginFormTemplate');
+        }
+        document.body.addEventListener('click', function (event) {
+          // delegated logout handling so it always works
+          if (event.target.closest && event.target.closest('#logoutButton')) {
+            event.preventDefault();
+            localStorage.removeItem('ultimaFilaCurrentUser');
+            window.currentUser = null;
+            updateAuthInterface();
+            showToast('Has cerrado sesión.');
+            return;
+          }
+          if (event.target.closest && event.target.closest('#sidebarMinimizeTop')) {
+            event.preventDefault();
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            return;
+          }
+          if (event.target.matches && event.target.matches('#editProfile')) {
+            event.preventDefault();
+            window.openModal('profile');
+          }
+          if (event.target.matches && event.target.matches('#addPost')) {
+            event.preventDefault();
+            window.openModal('post');
+          }
+          let deleteButton = event.target.closest ? event.target.closest('[data-delete-post]') : null;
+          if (!deleteButton && event.target.nodeType === Node.TEXT_NODE) {
+            deleteButton = event.target.parentElement?.closest('[data-delete-post]') || null;
+          }
+          if (deleteButton) {
+            event.preventDefault();
+            const id = Number(deleteButton.dataset.deletePost);
+            if (!Number.isNaN(id)) {
+              userPosts = (userPosts || []).filter(post => post.id !== id);
+              savePostsData();
+              syncPostsData();
+              window.render('perfil');
+              updatePage();
+              showToast('Publicación eliminada.');
+            }
+          }
+        });
+        const logout = document.getElementById('logoutButton');
+        if (logout) logout.addEventListener('click', function () { localStorage.removeItem('ultimaFilaCurrentUser'); window.currentUser = null; updateAuthInterface(); showToast('Has cerrado sesión.'); });
+      });
+    })();
+  </script>
+</body>
+</html>
